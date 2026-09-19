@@ -1,0 +1,339 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Task Manager</title>
+</head>
+
+<body>
+
+    <h1>Student Registration</h1>
+
+    <p>Register yourself for the Student Task Manager.</p>
+
+    <% if (message) { %>
+        <p>
+            <strong><%= message %></strong>
+        </p>
+    <% } %>
+
+
+    <!-- Registration Form -->
+    <form
+        action="/submit"
+        method="POST"
+        onsubmit="return validateForm()"
+    >
+
+        <!-- Name -->
+        <label for="name">
+            Name:
+        </label>
+
+        <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter your name"
+        >
+
+        <br><br>
+
+
+        <!-- Email -->
+        <label for="email">
+            Email:
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+        >
+
+        <br><br>
+
+
+        <!-- Age -->
+        <label for="age">
+            Age:
+        </label>
+
+        <input
+            type="number"
+            id="age"
+            name="age"
+            placeholder="Enter your age"
+        >
+
+        <br><br>
+
+
+        <!-- Password -->
+        <div class="mb-4">
+
+            <label
+                for="password"
+                class="form-label fw-semibold"
+            >
+                Password
+            </label>
+
+            <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Create a password"
+                oninput="checkPasswordStrength()"
+            >
+
+            <small
+                id="passwordStrength"
+                class="text-muted"
+            ></small>
+
+        </div>
+
+        <br><br>
+
+
+        <!-- Register Button -->
+        <button type="submit">
+            Register
+        </button>
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- API Student Form -->
+    <h2>Add Student Using API</h2>
+
+    <form id="apiStudentForm">
+
+        <label for="apiName">
+            Name:
+        </label>
+
+        <input
+            type="text"
+            id="apiName"
+            placeholder="Enter student name"
+            required
+        >
+
+        <br><br>
+
+
+        <label for="apiEmail">
+            Email:
+        </label>
+
+        <input
+            type="email"
+            id="apiEmail"
+            placeholder="Enter student email"
+            required
+        >
+
+        <br><br>
+
+
+        <label for="apiCourse">
+            Course:
+        </label>
+
+        <input
+            type="text"
+            id="apiCourse"
+            placeholder="Enter course"
+            required
+        >
+
+        <br><br>
+
+
+        <button type="submit">
+            Add Student
+        </button>
+
+    </form>
+
+
+    <p id="apiMessage"></p>
+
+
+    <hr>
+
+
+    <!-- Registered Students -->
+    <h2>
+        Registered Students
+        (<span id="studentCount">0</span>)
+    </h2>
+
+    <ul id="studentList"></ul>
+
+
+    <!-- Task 4 JavaScript -->
+    <script src="/script.js"></script>
+
+
+    <!-- Task 6 API JavaScript -->
+    <script>
+
+        // ==========================================
+        // TASK 6 - GET STUDENTS USING FETCH
+        // ==========================================
+
+        async function loadStudents() {
+
+            try {
+
+                const response = await fetch("/api/students");
+
+                const students = await response.json();
+
+                const studentList =
+                    document.getElementById("studentList");
+
+                const studentCount =
+                    document.getElementById("studentCount");
+
+
+                studentList.innerHTML = "";
+
+
+                studentCount.textContent = students.length;
+
+
+                if (students.length === 0) {
+
+                    studentList.innerHTML =
+                        "<li>No students registered yet.</li>";
+
+                    return;
+                }
+
+
+                students.forEach(student => {
+
+                    const li = document.createElement("li");
+
+                    li.innerHTML = `
+                        <strong>${student.name}</strong>
+                        - ${student.email}
+                        - ${student.course || "Course not specified"}
+                        ${student.age ? `- Age: ${student.age}` : ""}
+                    `;
+
+                    studentList.appendChild(li);
+
+                });
+
+            } catch (error) {
+
+                console.error("Error loading students:", error);
+
+            }
+
+        }
+
+
+        // ==========================================
+        // TASK 6 - POST STUDENT USING FETCH
+        // ==========================================
+
+        document
+            .getElementById("apiStudentForm")
+            .addEventListener("submit", async function(event) {
+
+                event.preventDefault();
+
+
+                const name =
+                    document.getElementById("apiName").value;
+
+                const email =
+                    document.getElementById("apiEmail").value;
+
+                const course =
+                    document.getElementById("apiCourse").value;
+
+
+                try {
+
+                    const response = await fetch(
+                        "/api/students",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                name: name,
+                                email: email,
+                                course: course
+                            })
+                        }
+                    );
+
+
+                    const data = await response.json();
+
+
+                    const apiMessage =
+                        document.getElementById("apiMessage");
+
+
+                    if (response.ok) {
+
+                        apiMessage.textContent =
+                            data.message;
+
+                        document
+                            .getElementById("apiStudentForm")
+                            .reset();
+
+
+                        // Refresh student list
+                        loadStudents();
+
+                    } else {
+
+                        apiMessage.textContent =
+                            data.message;
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "Error adding student:",
+                        error
+                    );
+
+                }
+
+            });
+
+
+        // Load students when page opens
+        loadStudents();
+
+    </script>
+
+</body>
+
+</html>
+```
